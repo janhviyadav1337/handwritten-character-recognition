@@ -1,0 +1,7 @@
+tensorflow
+tensorflow-datasets
+numpy
+matplotlib
+importlib-resources
+streamlit
+pillow
