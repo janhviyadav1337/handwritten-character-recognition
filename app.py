@@ -3,6 +3,7 @@ from pathlib import Path
 
 import streamlit as st
 from PIL import Image
+from streamlit_drawable_canvas import st_canvas
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -236,12 +237,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-uploaded_file = st.file_uploader(
-    "Upload PNG or JPG",
-    type=["png", "jpg", "jpeg"],
-    label_visibility="collapsed",
-)
-
 model_ready = DEFAULT_MODEL_PATH.exists()
 if not model_ready:
     st.markdown(
@@ -250,35 +245,102 @@ if not model_ready:
         unsafe_allow_html=True,
     )
 
-left, right = st.columns([1.05, 0.95], gap="large")
-with left:
+uploaded_file = None
+canvas_result = None
+input_mode = st.radio(
+    "Choose an input method",
+    ["Upload an image", "Draw a character"],
+    horizontal=True,
+)
+
+if input_mode == "Upload an image":
+    uploaded_file = st.file_uploader(
+        "Upload PNG or JPG",
+        type=["png", "jpg", "jpeg"],
+        label_visibility="collapsed",
+    )
     if uploaded_file:
         try:
             uploaded_image = Image.open(uploaded_file)
             st.image(uploaded_image, caption="Uploaded image", use_container_width=True)
         except (OSError, Image.DecompressionBombError) as error:
             st.error(f"Could not open this image: {error}")
+else:
+    if "canvas_reset" not in st.session_state:
+        st.session_state.canvas_reset = 0
 
+    canvas_column, canvas_action = st.columns([1, 0.32], gap="large")
+    with canvas_column:
+        canvas_result = st_canvas(
+            fill_color="rgba(255, 255, 255, 1)",
+            stroke_width=18,
+            stroke_color="#111111",
+            background_color="#ffffff",
+            width=280,
+            height=280,
+            drawing_mode="freedraw",
+            key=f"character_canvas_{st.session_state.canvas_reset}",
+            display_toolbar=True,
+            update_streamlit=True,
+        )
+    with canvas_action:
+        if st.button("Clear", use_container_width=True):
+            st.session_state.canvas_reset += 1
+            st.rerun()
+
+left, right = st.columns([1.05, 0.95], gap="large")
+with left:
+    st.markdown(
+        '<div class="result-card"><h3>Input status</h3>'
+        '<div class="confidence">Choose Upload or Draw above</div></div>',
+        unsafe_allow_html=True,
+    )
 with right:
     st.markdown('<div class="result-card"><h3>Prediction</h3>', unsafe_allow_html=True)
     st.markdown('<div class="prediction-char">—</div>', unsafe_allow_html=True)
-    st.markdown('<div class="confidence">Upload an image to begin</div>', unsafe_allow_html=True)
+    st.markdown('<div class="confidence">Upload or draw a character to begin</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 recognize = st.button(
     "Recognize Character",
-    disabled=not uploaded_file or not model_ready,
+    disabled=(
+        (input_mode == "Upload an image" and uploaded_file is None)
+        or (input_mode == "Draw a character" and canvas_result is None)
+        or not model_ready
+    ),
     use_container_width=True,
 )
 
-if recognize and uploaded_file:
+recognition_source = None
+if recognize:
+    if input_mode == "Upload an image" and uploaded_file is not None:
+        try:
+            recognition_source = Image.open(uploaded_file)
+        except (OSError, Image.DecompressionBombError) as error:
+            st.error(f"Could not open this image: {error}")
+    elif canvas_result is not None and canvas_result.image_data is not None:
+        recognition_source = Image.fromarray(
+            canvas_result.image_data.astype("uint8"),
+            mode="RGBA",
+        )
+
+if recognition_source is not None:
     try:
-        uploaded_image = Image.open(uploaded_file)
-        input_image, preview_image = preprocess_uploaded_image(uploaded_image)
+        preprocessing_mode = "photo" if input_mode == "Upload an image" else "canvas"
+        input_image, preview_image, preprocessing_stages = preprocess_uploaded_image(
+            recognition_source,
+            mode=preprocessing_mode,
+        )
         with st.spinner("Analyzing handwriting with the CNN..."):
             model = get_loaded_model()
             class_names = load_class_names()
             predictions = predict_character(model, input_image, class_names)
+
+        with st.expander("Preprocessing debug — inspect every CNN input stage"):
+            stage_columns = st.columns(3)
+            for index, (stage_name, stage_image) in enumerate(preprocessing_stages.items()):
+                with stage_columns[index % len(stage_columns)]:
+                    st.image(stage_image, caption=stage_name, use_container_width=True)
 
         st.subheader("Prediction results")
         result_left, result_right = st.columns([0.55, 1.45], gap="large")

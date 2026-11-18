@@ -1,0 +1,75 @@
+{
+  "training_duration_seconds": 2130.4190562500007,
+  "completed_epochs": 30,
+  "max_epochs": 30,
+  "seed": 42,
+  "batch_size": 128,
+  "baseline": {
+    "training": {
+      "count": 101520,
+      "accuracy": 0.8146966115051222,
+      "loss": 0.5502868890762329
+    },
+    "validation": {
+      "count": 11280,
+      "accuracy": 0.8136524822695036,
+      "loss": 0.5608898997306824
+    },
+    "testing": {
+      "count": 18800,
+      "accuracy": 0.8088829787234042,
+      "loss": 0.5848986506462097
+    }
+  },
+  "candidate": {
+    "training": {
+      "count": 101520,
+      "accuracy": 0.9200157604412924,
+      "loss": 0.19990330934524536
+    },
+    "validation": {
+      "count": 11280,
+      "accuracy": 0.9040780141843971,
+      "loss": 0.27779942750930786
+    },
+    "testing": {
+      "count": 18800,
+      "accuracy": 0.9035106382978724,
+      "loss": 0.27605709433555603
+    }
+  },
+  "candidate_model_path": "models/emnist_cnn_candidate.keras",
+  "baseline_backup_path": "models/backups/emnist_cnn_baseline_20261118_225451.keras",
+  "promoted_to_website": true,
+  "handwritten_photo": {
+    "filename": "Image.jpeg",
+    "baseline": [
+      [
+        "I",
+        97.06085920333862
+      ],
+      [
+        "L",
+        1.7687233164906502
+      ],
+      [
+        "T",
+        0.6435749121010303
+      ]
+    ],
+    "candidate": [
+      [
+        "A",
+        99.00625348091125
+      ],
+      [
+        "a",
+        0.5376527551561594
+      ],
+      [
+        "H",
+        0.22104347590357065
+      ]
+    ]
+  }
+}

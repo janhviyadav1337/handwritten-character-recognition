@@ -1,6 +1,13 @@
 streamlit==1.51.0
-tensorflow==2.21.0
-numpy==2.1.3
-Pillow==12.0.0
-protobuf==6.33.5
+tensorflow-macos==2.16.2; platform_system == "Darwin"
+tensorflow-metal==1.2.0; platform_system == "Darwin"
+tensorflow==2.16.2; platform_system != "Darwin"
+tensorflow-datasets==4.9.10
+numpy==1.26.4
+Pillow==12.3.0
+protobuf==4.25.9
+googleapis-common-protos==1.63.2
 packaging==25.0
+matplotlib==3.8.4
+streamlit-drawable-canvas==0.9.3
+opencv-python-headless==4.11.0.86
