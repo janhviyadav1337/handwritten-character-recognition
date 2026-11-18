@@ -1,7 +1,6 @@
-tensorflow
-tensorflow-datasets
-numpy
-matplotlib
-importlib-resources
-streamlit
-pillow
+streamlit==1.51.0
+tensorflow==2.21.0
+numpy==2.1.3
+Pillow==12.0.0
+protobuf==6.33.5
+packaging==25.0

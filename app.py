@@ -17,6 +17,11 @@ from model_utils import (  # noqa: E402
 )
 
 
+@st.cache_resource(show_spinner=False)
+def get_loaded_model():
+    return load_model()
+
+
 st.set_page_config(
     page_title="ScriptAI | Handwritten Character Recognition",
     page_icon="S",
@@ -271,7 +276,7 @@ if recognize and uploaded_file:
         uploaded_image = Image.open(uploaded_file)
         input_image, preview_image = preprocess_uploaded_image(uploaded_image)
         with st.spinner("Analyzing handwriting with the CNN..."):
-            model = load_model()
+            model = get_loaded_model()
             class_names = load_class_names()
             predictions = predict_character(model, input_image, class_names)
 
